@@ -338,6 +338,13 @@ baseline_acc, baseline_time, base_true, base_pred = evaluate(base_model, test_ro
 cells.append(md("## 5. LoRA fine-tune"))
 
 cells.append(code("""\
+# Free the zero-shot baseline model's GPU memory before loading a second
+# copy for fine-tuning -- otherwise both stay resident simultaneously.
+import gc
+del base_model
+gc.collect()
+torch.cuda.empty_cache()
+
 lora_config = LoraConfig(
     task_type=TaskType.CAUSAL_LM,
     r=16,
@@ -363,7 +370,7 @@ def format_training_example(row):
 
 def tokenize_fn(examples):
     texts = [format_training_example({"text": t, "rating": r}) for t, r in zip(examples["text"], examples["rating"])]
-    tokenized = tokenizer(texts, truncation=True, max_length=512, padding="max_length")
+    tokenized = tokenizer(texts, truncation=True, max_length=200, padding="max_length")
     tokenized["labels"] = tokenized["input_ids"].copy()
     return tokenized
 
@@ -375,8 +382,9 @@ cells.append(code("""\
 training_args = TrainingArguments(
     output_dir="./clause-risk-lora",
     num_train_epochs=3,
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
+    gradient_accumulation_steps=2,
     eval_strategy="epoch",
     save_strategy="no",
     logging_steps=10,
