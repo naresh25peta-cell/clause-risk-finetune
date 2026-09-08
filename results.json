@@ -1,0 +1,13 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "test_set_size": 72,
+  "zero_shot_baseline": {
+    "accuracy": 0.25,
+    "total_seconds": 11.431050062179565
+  },
+  "lora_finetuned": {
+    "accuracy": 0.9166666666666666,
+    "total_seconds": 10.961775064468384
+  },
+  "improvement_pp": 66.66666666666666
+}

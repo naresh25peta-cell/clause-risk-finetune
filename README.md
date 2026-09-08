@@ -26,7 +26,29 @@ The notebook is generated from `notebooks/build_notebook.py`, which keeps the ce
 2. **LoRA fine-tune**: train a LoRA adapter (rank 16) on the training split for 3 epochs.
 3. **Same evaluation, fine-tuned model**: identical test set, identical prompt, identical model size — only the weights differ.
 
-Results (accuracy, per-class precision/recall, confusion matrices, and timing) are saved to `results.json` and `confusion_matrices.png` after running the notebook.
+## Results
+
+Run on a free Colab T4 GPU, 72 held-out test clauses:
+
+| | Accuracy | Time (72 examples) |
+|---|---:|---:|
+| Zero-shot baseline | 25.0% | 11.4s |
+| LoRA fine-tuned | 91.7% | 11.0s |
+| **Improvement** | **+66.7 pp** | ~same |
+
+Inference cost is essentially identical between the two — same model, same size, same forward pass. The entire gap is what the ~450 training examples taught it.
+
+The baseline's 25% isn't "not great," it's a model that has collapsed to always guessing Green: 0% recall on both Red and Amber. Fine-tuning fixes that completely for Red and Amber (100% recall each) and gets Green mostly right, with the remaining errors split between Red and Amber rather than reversed:
+
+![Confusion matrices: zero-shot baseline vs LoRA fine-tuned](confusion_matrices.png)
+
+| Class | Baseline recall | Fine-tuned recall | Fine-tuned precision |
+|---|---:|---:|---:|
+| Red | 0% | 100% | 97% |
+| Amber | 0% | 100% | 83% |
+| Green | 100% | 67% | 100% |
+
+The one weak spot: 6 of 18 Green clauses get misclassified (1 as Red, 5 as Amber) — the fine-tuned model leans toward flagging risk when unsure, rather than defaulting to "acceptable." For a risk-scanning task that's arguably the safer failure mode, but it's a real gap, not a clean sweep.
 
 ## Why this comparison design
 
