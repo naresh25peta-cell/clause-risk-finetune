@@ -37,7 +37,7 @@ label noise from an LLM-labeled dataset.
 cells.append(md("## 1. Setup"))
 
 cells.append(code("""\
-!pip install -q transformers==4.46.2 peft==0.13.2 accelerate==1.1.1 datasets==3.1.0 bitsandbytes==0.44.1 scikit-learn
+!pip install -q transformers==4.46.2 peft==0.13.2 accelerate==1.1.1 datasets==3.1.0 scikit-learn
 """))
 
 cells.append(code("""\
