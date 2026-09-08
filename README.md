@@ -50,6 +50,21 @@ The baseline's 25% isn't "not great," it's a model that has collapsed to always 
 
 The one weak spot: 6 of 18 Green clauses get misclassified (1 as Red, 5 as Amber) — the fine-tuned model leans toward flagging risk when unsure, rather than defaulting to "acceptable." For a risk-scanning task that's arguably the safer failure mode, but it's a real gap, not a clean sweep.
 
+## Using the trained adapter
+
+The actual trained LoRA adapter from the run above is included in `adapter/` (fp16, ~4.2MB — small enough to check into git since it's just the low-rank matrices, not the full model). To load it:
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
+
+base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
+model = PeftModel.from_pretrained(base, "adapter")
+```
+
+The tokenizer isn't included since fine-tuning didn't change it — load it from the base model directly, as above.
+
 ## Why this comparison design
 
 A common mistake in "fine-tuning vs. prompting" comparisons is changing two things at once — e.g. comparing a fine-tuned small model against a prompted *large* model. That conflates model size with the fine-tuning effect. Here, both arms use the identical 0.5B model and identical inference cost, so any accuracy difference is attributable to the ~450 training examples, not to a bigger model doing the work.
